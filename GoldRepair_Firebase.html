@@ -1,0 +1,1606 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gold Repair — Sistema de Gestión</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #D4AF37;
+  --gold-light: #F8CB1E;
+  --gold-pale: #FDE89C;
+  --gold-muted: #AA8F00;
+  --black: #0D0D0D;
+  --dark: #1A1A1A;
+  --dark2: #2D3133;
+  --grey: #A6ACAF;
+  --light: #F4F7F4;
+  --white: #FFFFFF;
+  --red: #C0392B;
+  --green: #27AE60;
+  --blue: #2980B9;
+  --orange: #E67E22;
+  --sidebar-w: 240px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--light);color:var(--dark2);min-height:100vh;display:flex}
+
+/* ===== LOGIN SCREEN ===== */
+#login-screen {
+  position:fixed;inset:0;background:var(--black);z-index:9999;
+  display:flex;align-items:center;justify-content:center;
+  background-image:radial-gradient(ellipse at 30% 40%, rgba(212,175,55,0.07) 0%, transparent 60%);
+}
+.login-box {
+  background:#111;border:1px solid rgba(212,175,55,0.25);
+  border-top:5px solid var(--gold);border-radius:14px;
+  padding:52px 44px;width:100%;max-width:420px;text-align:center;
+  box-shadow:0 30px 80px rgba(0,0,0,0.6);
+}
+.login-logo {
+  font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:700;
+  color:var(--white);letter-spacing:2px;margin-bottom:4px;
+}
+.login-logo span{color:var(--gold)}
+.login-subtitle{font-size:10px;color:var(--grey);letter-spacing:3px;
+  text-transform:uppercase;margin-bottom:40px;line-height:1.8}
+.login-field{margin-bottom:16px;text-align:left}
+.login-field label{display:block;font-size:10px;color:var(--grey);
+  text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;font-weight:600}
+.login-field input{
+  width:100%;padding:13px 16px;
+  border:1.5px solid rgba(212,175,55,0.2);border-radius:7px;
+  background:rgba(255,255,255,0.04);color:var(--white);
+  font-family:'DM Sans',sans-serif;font-size:14px;box-sizing:border-box;
+  outline:none;transition:border 0.2s;
+}
+.login-field input:focus{border-color:var(--gold);background:rgba(212,175,55,0.06)}
+.login-field input::placeholder{color:rgba(166,172,175,0.5)}
+.login-btn{
+  width:100%;padding:14px;background:var(--gold);color:var(--black);
+  border:none;border-radius:7px;font-size:14px;font-weight:700;cursor:pointer;
+  font-family:'DM Sans',sans-serif;letter-spacing:1px;transition:all 0.2s;margin-top:10px;
+}
+.login-btn:hover{background:var(--gold-muted);color:white}
+.login-btn:active{transform:scale(0.99)}
+#login-error{color:#E74C3C;font-size:12px;margin:8px 0 0;min-height:18px;text-align:center}
+.login-spinner{display:none;font-size:12px;color:var(--grey);margin-top:10px}
+
+/* ===== SIDEBAR ===== */
+.sidebar{width:var(--sidebar-w);background:var(--black);min-height:100vh;display:flex;flex-direction:column;position:fixed;left:0;top:0;z-index:100}
+.sidebar-logo{padding:28px 20px 20px;border-bottom:1px solid rgba(212,175,55,0.2)}
+.logo-text{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;color:var(--white);letter-spacing:1px}
+.logo-text span{color:var(--gold)}
+.logo-sub{font-size:10px;color:var(--grey);letter-spacing:3px;text-transform:uppercase;margin-top:2px}
+.sidebar-nav{flex:1;padding:20px 0}
+.nav-section-label{font-size:9px;color:rgba(166,172,175,0.5);letter-spacing:3px;text-transform:uppercase;padding:10px 20px 6px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 20px;cursor:pointer;transition:all 0.2s;color:var(--grey);font-size:13px;font-weight:500;border-left:3px solid transparent}
+.nav-item:hover{background:rgba(212,175,55,0.08);color:var(--gold-light)}
+.nav-item.active{background:rgba(212,175,55,0.12);color:var(--gold);border-left-color:var(--gold)}
+.nav-item .icon{width:18px;text-align:center;font-size:15px}
+.sidebar-footer{padding:18px 20px;border-top:1px solid rgba(212,175,55,0.15);font-size:11px;color:rgba(166,172,175,0.5)}
+.sidebar-user{font-size:10px;color:var(--gold);margin-bottom:6px;word-break:break-all;font-weight:600}
+.logout-btn{
+  width:100%;margin-top:8px;padding:7px 12px;background:none;
+  border:1px solid rgba(212,175,55,0.2);color:var(--grey);
+  border-radius:5px;cursor:pointer;font-size:11px;font-family:'DM Sans',sans-serif;
+  transition:all 0.2s;
+}
+.logout-btn:hover{border-color:var(--red);color:#E74C3C}
+.status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--grey);margin-right:5px;transition:background 0.5s}
+.status-dot.online{background:var(--green)}
+.status-dot.saving{background:var(--orange);animation:pulse 1s infinite}
+
+/* ===== MAIN ===== */
+.main{margin-left:var(--sidebar-w);flex:1;min-height:100vh;display:flex;flex-direction:column}
+.topbar{background:var(--white);border-bottom:1px solid #E8E8E8;padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--dark)}
+.topbar-right{display:flex;align-items:center;gap:16px}
+.badge-count{background:var(--gold);color:var(--black);font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px}
+.content{padding:32px;flex:1}
+
+/* ===== TABS ===== */
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* ===== STATS ===== */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:32px}
+.stat-card{background:var(--white);border-radius:10px;padding:20px;border:1px solid #EBEBEB;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--gold)}
+.stat-card.green::before{background:var(--green)}
+.stat-card.blue::before{background:var(--blue)}
+.stat-card.orange::before{background:var(--orange)}
+.stat-card.red::before{background:var(--red)}
+.stat-number{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:700;color:var(--dark);line-height:1}
+.stat-label{font-size:11px;color:var(--grey);text-transform:uppercase;letter-spacing:1px;margin-top:6px}
+
+/* ===== TABLE ===== */
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.section-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--dark)}
+.table-wrap{background:var(--white);border-radius:10px;border:1px solid #EBEBEB;overflow:hidden;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{background:var(--dark);color:var(--gold);text-align:left;padding:12px 16px;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;white-space:nowrap}
+tbody tr{border-bottom:1px solid #F0F0F0;transition:background 0.15s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:#FAFAFA}
+tbody td{padding:13px 16px;vertical-align:middle}
+.client-name{font-weight:600;color:var(--dark);font-size:13px}
+.client-code{font-size:11px;color:var(--grey);font-family:monospace}
+.status-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
+.status-badge.proceso{background:#FFF9C4;color:#F57F17}
+.status-badge.reparacion{background:#E3F2FD;color:#1565C0}
+.status-badge.terminado{background:#E8F5E9;color:#2E7D32}
+.status-badge.cancelado{background:#FDECEA;color:#C62828}
+.status-badge.entregado{background:#F3E5F5;color:#6A1B9A}
+.action-btn{padding:5px 12px;border-radius:5px;border:none;cursor:pointer;font-size:11px;font-weight:600;transition:all 0.2s;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+.action-btn.docs{background:var(--gold-pale);color:var(--dark2)}
+.action-btn.docs:hover{background:var(--gold)}
+.action-btn.invoice{background:var(--dark);color:var(--gold)}
+.action-btn.invoice:hover{background:#333}
+.action-btn.del{background:#FFF0EE;color:var(--red)}
+.action-btn.del:hover{background:#FFD0CC}
+.action-btn.cloud{background:#E3F2FD;color:var(--blue)}
+.action-btn.cloud:hover{background:#BBDEFB}
+
+/* ===== FORM ===== */
+.form-card{background:var(--white);border-radius:12px;border:1px solid #EBEBEB;padding:28px;margin-bottom:24px}
+.form-card-title{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid #F0F0F0;color:var(--dark);display:flex;align-items:center;gap:8px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.full{grid-column:1/-1}
+.form-label{font-size:11px;font-weight:600;color:var(--grey);text-transform:uppercase;letter-spacing:1px}
+.form-input,.form-select,.form-textarea{padding:10px 14px;border:1.5px solid #E0E0E0;border-radius:6px;font-size:14px;font-family:'DM Sans',sans-serif;background:#FAFAFA;color:var(--dark2);transition:border 0.2s}
+.form-input:focus,.form-select:focus,.form-textarea:focus{outline:none;border-color:var(--gold);background:white}
+.form-textarea{resize:vertical;min-height:80px}
+.generated-code{background:rgba(212,175,55,0.1);border:1.5px dashed var(--gold);color:var(--dark);font-weight:700;font-family:monospace;font-size:13px}
+
+/* ===== BUTTONS ===== */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:7px;border:none;cursor:pointer;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;transition:all 0.2s}
+.btn-gold{background:var(--gold);color:var(--dark)}
+.btn-gold:hover{background:var(--gold-muted);color:white}
+.btn-dark{background:var(--dark);color:var(--gold)}
+.btn-dark:hover{background:#333}
+.btn-outline{background:transparent;color:var(--dark2);border:1.5px solid #D0D0D0}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+.btn-green{background:var(--green);color:white}
+.btn-green:hover{background:#219653}
+.btn-sm{padding:7px 14px;font-size:12px}
+.btn-lg{padding:14px 28px;font-size:15px;font-weight:700}
+.btn-group{display:flex;gap:10px;flex-wrap:wrap}
+.btn:disabled{opacity:0.6;cursor:not-allowed}
+
+/* ===== INVOICE BUILDER ===== */
+.tariff-item{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border:1.5px solid #EBEBEB;border-radius:7px;cursor:pointer;transition:all 0.2s;background:#FAFAFA}
+.tariff-item:hover{border-color:var(--gold);background:rgba(212,175,55,0.05)}
+.tariff-item.selected{border-color:var(--gold);background:rgba(212,175,55,0.1)}
+.tariff-name{font-size:13px;font-weight:500}
+.tariff-price{font-size:14px;font-weight:700;color:var(--gold-muted)}
+.tariff-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-bottom:20px}
+.invoice-lines{margin-bottom:20px}
+.invoice-line{display:flex;align-items:center;gap:10px;padding:10px;border-bottom:1px solid #F0F0F0}
+.invoice-line:last-child{border-bottom:none}
+.invoice-line-name{flex:1;font-size:13px}
+.invoice-line-price{font-weight:700;font-size:13px;min-width:70px;text-align:right}
+.invoice-line-remove{color:var(--red);cursor:pointer;font-size:16px;background:none;border:none;padding:2px 6px}
+.totals-box{background:var(--dark);color:white;border-radius:8px;padding:20px}
+.totals-row{display:flex;justify-content:space-between;padding:5px 0;font-size:13px}
+.totals-row.total{font-size:18px;font-weight:700;color:var(--gold);border-top:1px solid rgba(255,255,255,0.15);margin-top:8px;padding-top:12px}
+
+/* ===== MODAL ===== */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:500;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal-box{background:white;border-radius:12px;width:100%;max-width:800px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 25px 60px rgba(0,0,0,0.3)}
+.modal-header{padding:18px 24px;border-bottom:1px solid #EBEBEB;display:flex;justify-content:space-between;align-items:center;background:var(--dark)}
+.modal-title{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold)}
+.modal-close{background:none;border:none;color:var(--grey);font-size:22px;cursor:pointer;line-height:1}
+.modal-close:hover{color:white}
+.modal-body{flex:1;overflow-y:auto;padding:0}
+.modal-footer{padding:14px 24px;border-top:1px solid #EBEBEB;display:flex;gap:10px;justify-content:flex-end;background:#FAFAFA;flex-wrap:wrap}
+
+/* ===== DOC CHOOSER ===== */
+.doc-chooser{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:24px}
+.doc-choice-btn{background:white;border:1.5px solid #E0E0E0;border-radius:10px;padding:20px;cursor:pointer;transition:all 0.2s;text-align:center}
+.doc-choice-btn:hover{border-color:var(--gold);background:rgba(212,175,55,0.05)}
+.doc-choice-btn .dc-icon{font-size:28px;margin-bottom:8px}
+.doc-choice-btn .dc-name{font-weight:600;font-size:13px;color:var(--dark)}
+.doc-choice-btn .dc-desc{font-size:11px;color:var(--grey);margin-top:3px}
+
+/* ===== PRINTABLE DOCS ===== */
+.printable-doc{padding:32px;font-family:'DM Sans',sans-serif;font-size:13px;color:#333}
+
+/* ===== FILTER BAR ===== */
+.filter-bar{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;align-items:center}
+.filter-bar .form-input{min-width:200px;padding:8px 14px;font-size:13px}
+.filter-btn{padding:7px 14px;border:1.5px solid #D0D0D0;border-radius:20px;background:white;cursor:pointer;font-size:12px;font-weight:600;color:var(--grey);transition:all 0.2s}
+.filter-btn:hover,.filter-btn.active{border-color:var(--gold);color:var(--gold-muted);background:rgba(212,175,55,0.08)}
+
+/* ===== SUCCESS & EMPTY ===== */
+.success-panel{background:linear-gradient(135deg,rgba(212,175,55,0.1),rgba(212,175,55,0.05));border:1.5px solid var(--gold);border-radius:10px;padding:24px;display:none}
+.success-panel.show{display:block}
+.success-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--dark);margin-bottom:4px}
+.success-code{font-family:monospace;font-size:15px;color:var(--gold-muted);font-weight:700}
+.empty-state{text-align:center;padding:50px 20px;color:var(--grey)}
+.empty-state .icon{font-size:40px;margin-bottom:12px}
+.empty-state p{font-size:14px}
+
+/* ===== PRINT ===== */
+@media print{
+  .sidebar,.topbar,.no-print,#login-screen{display:none!important}
+  .main{margin-left:0}
+  body{background:white}
+}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:768px){
+  .sidebar{width:60px}
+  .sidebar-logo,.logo-sub,.nav-item span:not(.icon),.sidebar-footer,.nav-section-label{display:none}
+  .main{margin-left:60px}
+  .content{padding:16px}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .doc-chooser{grid-template-columns:1fr}
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.tab-panel.active{animation:fadeIn 0.25s ease}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+.loading{animation:pulse 1.5s infinite}
+
+/* ===== DOC PRINT STYLES ===== */
+.pdoc{max-width:100%;font-size:12px;line-height:1.5}
+.pdoc h1{font-family:'Cormorant Garamond',serif;font-size:24px;margin-bottom:4px}
+.pdoc .gold{color:var(--gold-muted);font-weight:700}
+.pdoc table{width:100%;border-collapse:collapse;margin:12px 0}
+.pdoc table th{background:#0D0D0D;color:#D4AF37;padding:8px 12px;font-size:10px;text-transform:uppercase;letter-spacing:1px;text-align:left}
+.pdoc table td{padding:10px 12px;border-bottom:1px solid #EEE}
+.pdoc .total-row{background:#0D0D0D;color:#D4AF37;font-weight:700;font-size:16px}
+.pdoc .total-row td{padding:12px}
+.pdoc .field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:10px 0}
+.pdoc .field-box{border-bottom:1.5px solid #DDD;padding:6px 0}
+.pdoc .field-label{font-size:9px;color:#999;text-transform:uppercase;letter-spacing:1px}
+.pdoc .field-value{font-size:13px;font-weight:600;margin-top:2px}
+.pdoc .sig-row{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:30px;text-align:center}
+.pdoc .sig-line{border-bottom:1.5px solid #333;height:50px;margin-bottom:6px}
+.pdoc .sig-label{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#555;font-weight:700}
+.pdoc .notice-box{border:2px dashed var(--gold-muted);padding:12px;border-radius:4px;margin:12px 0;background:#FFFDF5}
+.pdoc .notice-title{color:#d35400;font-weight:700;font-size:11px;margin-bottom:4px}
+.pdoc .terms-box,.pdoc .terms{background:#FDE89C;padding:12px;border-radius:4px;font-size:10px;color:#333;line-height:1.4;text-align:justify;margin-top:12px}
+.pdoc .header-row{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid var(--gold-muted);padding-bottom:12px;margin-bottom:16px}
+.pdoc .watermark{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-30deg);font-size:48px;font-weight:900;color:rgba(0,0,0,0.03);pointer-events:none;white-space:nowrap;z-index:0}
+.pdoc .company-name{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700}
+</style>
+</head>
+<body>
+
+<!-- ========================================
+     LOGIN SCREEN
+     ======================================== -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo"><span>GOLD</span> REPAIR</div>
+    <div class="login-subtitle">Sistema de Gestión &nbsp;·&nbsp; Acceso Privado</div>
+    <div class="login-field">
+      <label>Correo electrónico</label>
+      <input type="email" id="login-email" placeholder="admin@goldrepair.com" autocomplete="username">
+    </div>
+    <div class="login-field">
+      <label>Contraseña</label>
+      <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <div id="login-error"></div>
+    <button class="login-btn" id="login-btn" onclick="loginUser()">ACCEDER AL SISTEMA</button>
+    <div class="login-spinner" id="login-spinner">Verificando credenciales...</div>
+  </div>
+</div>
+
+<!-- ========================================
+     SIDEBAR
+     ======================================== -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-text"><span>GOLD</span> REPAIR</div>
+    <div class="logo-sub">Sistema de Gestión</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Principal</div>
+    <div class="nav-item active" onclick="showTab('dashboard')">
+      <span class="icon">◈</span><span>Panel de Control</span>
+    </div>
+    <div class="nav-item" onclick="showTab('ingreso')">
+      <span class="icon">＋</span><span>Nuevo Ingreso</span>
+    </div>
+    <div class="nav-section-label">Gestión</div>
+    <div class="nav-item" onclick="showTab('gestion')">
+      <span class="icon">☰</span><span>Todos los Equipos</span>
+    </div>
+    <div class="nav-item" onclick="showTab('factura')">
+      <span class="icon">◎</span><span>Crear Factura</span>
+    </div>
+    <div class="nav-section-label">Referencia</div>
+    <div class="nav-item" onclick="showTab('tarifas')">
+      <span class="icon">◇</span><span>Tarifas</span>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sidebar-user" id="sidebar-user"></div>
+    <div><span class="status-dot" id="status-dot"></span><span id="status-text">Conectando...</span></div>
+    <div style="margin-top:4px">© 2026 Gold Repair S.L.</div>
+    <button class="logout-btn" onclick="logoutUser()">⎋ Cerrar sesión</button>
+  </div>
+</aside>
+
+<!-- ========================================
+     MAIN
+     ======================================== -->
+<main class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbar-title">Panel de Control</div>
+    <div class="topbar-right">
+      <span style="font-size:12px;color:var(--grey)" id="today-date"></span>
+      <span class="badge-count" id="active-badge">0 activos</span>
+      <button class="btn btn-gold btn-sm" onclick="showTab('ingreso')">＋ Nuevo Ingreso</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ===== DASHBOARD ===== -->
+    <div id="tab-dashboard" class="tab-panel active">
+      <div class="stats-grid" id="stats-grid"></div>
+      <div class="section-header">
+        <div class="section-title">Últimos Movimientos</div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Código / Cliente</th>
+            <th>Equipo</th>
+            <th>Técnico</th>
+            <th>Entrada</th>
+            <th>Estado</th>
+            <th>Docs ☁</th>
+            <th>Acciones</th>
+          </tr></thead>
+          <tbody id="dashboard-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== NUEVO INGRESO ===== -->
+    <div id="tab-ingreso" class="tab-panel">
+      <div id="success-panel" class="success-panel">
+        <div class="success-title">✓ Ingreso registrado y guardado en la nube</div>
+        <div id="success-info" class="success-code"></div>
+        <div style="margin-top:16px;" class="btn-group">
+          <button class="btn btn-dark" onclick="openDocChooser()">📄 Generar Documentos</button>
+          <button class="btn btn-outline" onclick="goToInvoice()">◎ Crear Factura</button>
+          <button class="btn btn-outline" onclick="resetForm()">＋ Nuevo Ingreso</button>
+        </div>
+      </div>
+
+      <div id="ingreso-form">
+        <div class="form-card">
+          <div class="form-card-title"><span>👤</span> Datos del Cliente</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Nombre *</label>
+              <input class="form-input" id="f-nombre" placeholder="Nombre" oninput="updateCode()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Apellidos *</label>
+              <input class="form-input" id="f-apellidos" placeholder="Apellidos" oninput="updateCode()">
+            </div>
+            <div class="form-group">
+              <label class="form-label">DNI / NIE / CIF</label>
+              <input class="form-input" id="f-dni" placeholder="Documento de identidad">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Teléfono</label>
+              <input class="form-input" id="f-tel" placeholder="600 000 000" type="tel">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input class="form-input" id="f-email" placeholder="cliente@correo.com" type="email">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Dirección (opcional)</label>
+              <input class="form-input" id="f-dir" placeholder="C/ Ejemplo, 1, Bilbao">
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Código Cliente (autogenerado)</label>
+              <input class="form-input generated-code" id="f-codigo" readonly>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <div class="form-card-title"><span>💻</span> Datos del Equipo</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Tipo de Dispositivo *</label>
+              <select class="form-select" id="f-tipo">
+                <option value="">Seleccionar...</option>
+                <option>PC de Sobremesa</option><option>Portátil</option><option>Tablet</option>
+                <option>Smartphone</option><option>Mando</option><option>Switch / Router</option>
+                <option>Impresora</option><option>Otro</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Marca</label>
+              <input class="form-input" id="f-marca" placeholder="Ej: Apple, Samsung, HP">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Modelo</label>
+              <input class="form-input" id="f-modelo" placeholder="Ej: MacBook Pro M2">
+            </div>
+            <div class="form-group">
+              <label class="form-label">N.º Serie / Identificación</label>
+              <input class="form-input" id="f-serie" placeholder="Número de serie">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Técnico Responsable</label>
+              <select class="form-select" id="f-tecnico">
+                <option value="">Sin asignar</option>
+                <option value="GR_26AA">GR_26AA</option>
+                <option value="GR_26AE">GR_26AE</option>
+                <option value="GR_26AB">GR_26AB</option>
+                <option value="GR_26AC">GR_26AC</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Estado Inicial</label>
+              <select class="form-select" id="f-estado">
+                <option value="En proceso">En proceso</option>
+                <option value="En reparación">En reparación</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Notas del Cliente</label>
+              <textarea class="form-textarea" id="f-notas-cliente" placeholder="Descripción del problema, síntomas, petición del cliente..."></textarea>
+            </div>
+            <div class="form-group full">
+              <label class="form-label">Estado Estético (golpes, arañazos, accesorios)</label>
+              <textarea class="form-textarea" id="f-estetico" placeholder="Estado visual del equipo al recibirlo..."></textarea>
+            </div>
+            <div class="form-group full">
+              <label class="form-label">N.º Ticket (autogenerado)</label>
+              <input class="form-input generated-code" id="f-ticket" readonly>
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-gold btn-lg" id="btn-submit" onclick="submitIngreso()">✓ Registrar Ingreso</button>
+          <button class="btn btn-outline" onclick="resetForm()">Limpiar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== GESTIÓN ===== -->
+    <div id="tab-gestion" class="tab-panel">
+      <div class="filter-bar">
+        <input class="form-input" id="search-input" placeholder="🔍 Buscar por nombre, código..." oninput="renderGestion()">
+        <button class="filter-btn active" data-filter="todos" onclick="setFilter('todos',this)">Todos</button>
+        <button class="filter-btn" data-filter="En proceso" onclick="setFilter('En proceso',this)">En proceso</button>
+        <button class="filter-btn" data-filter="En reparación" onclick="setFilter('En reparación',this)">En reparación</button>
+        <button class="filter-btn" data-filter="Terminado" onclick="setFilter('Terminado',this)">Terminados</button>
+        <button class="filter-btn" data-filter="Entregado" onclick="setFilter('Entregado',this)">Entregados</button>
+        <button class="filter-btn" data-filter="Cancelado" onclick="setFilter('Cancelado',this)">Cancelados</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Código / Cliente</th>
+            <th>Equipo</th>
+            <th>Técnico</th>
+            <th>Entrada</th>
+            <th>Estado</th>
+            <th>Docs ☁</th>
+            <th>Acciones</th>
+          </tr></thead>
+          <tbody id="gestion-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ===== FACTURA ===== -->
+    <div id="tab-factura" class="tab-panel">
+      <div class="form-card">
+        <div class="form-card-title"><span>👤</span> Cliente para la Factura</div>
+        <div class="form-grid">
+          <div class="form-group full">
+            <label class="form-label">Seleccionar cliente registrado (opcional)</label>
+            <select class="form-select" id="inv-client-select" onchange="prefillInvoiceClient()">
+              <option value="">— Seleccionar o rellenar manualmente —</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nombre del cliente</label>
+            <input class="form-input" id="inv-nombre" placeholder="Nombre completo">
+          </div>
+          <div class="form-group">
+            <label class="form-label">DNI / CIF</label>
+            <input class="form-input" id="inv-dni" placeholder="Documento">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Referencia Factura</label>
+            <input class="form-input" id="inv-ref" placeholder="2026-GR-001">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nota del Técnico</label>
+            <input class="form-input" id="inv-nota" placeholder="Nota adicional...">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-card">
+        <div class="form-card-title"><span>◇</span> Seleccionar Servicios</div>
+        <div class="tariff-grid" id="tariff-selector"></div>
+        <div id="custom-service-area">
+          <div style="margin-bottom:10px;font-weight:600;font-size:13px;color:var(--grey)">O añadir servicio personalizado:</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <input class="form-input" id="custom-svc-name" placeholder="Nombre del servicio" style="flex:2;min-width:160px">
+            <input class="form-input" id="custom-svc-price" placeholder="Precio (€)" type="number" style="flex:1;min-width:100px">
+            <button class="btn btn-outline" onclick="addCustomService()">Añadir</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-card" id="invoice-preview-card" style="display:none">
+        <div class="form-card-title"><span>◎</span> Resumen de Factura</div>
+        <div id="invoice-lines" class="invoice-lines"></div>
+        <div class="totals-box">
+          <div class="totals-row"><span>Subtotal</span><span id="inv-subtotal">0.00€</span></div>
+          <div class="totals-row total"><span>TOTAL A PAGAR</span><span id="inv-total">0.00€</span></div>
+        </div>
+        <div style="margin-top:20px;" class="btn-group">
+          <button class="btn btn-dark btn-lg" onclick="printInvoice()">⬇ Ver Factura PDF</button>
+          <button class="btn btn-outline" onclick="clearInvoice()">✕ Limpiar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TARIFAS ===== -->
+    <div id="tab-tarifas" class="tab-panel">
+      <div class="form-card">
+        <div class="form-card-title"><span>◇</span> Tarifas Gold Repair — Servicios Oficiales</div>
+        <div style="margin-bottom:16px;font-size:13px;color:var(--grey)">Todos los precios incluyen IVA. Componentes 100% reciclados. Servicio Express disponible bajo solicitud.</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Servicio</th><th style="text-align:right">Precio</th></tr></thead>
+            <tbody id="tariff-full-table"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</main>
+
+<!-- ===== MODAL DOCS ===== -->
+<div class="modal-overlay" id="modal-docs">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Documentos del Ingreso</div>
+      <button class="modal-close" onclick="closeModal('modal-docs')">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer no-print">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('modal-docs')">Cerrar</button>
+      <button class="btn btn-gold btn-sm" id="btn-save-pdf" style="display:none" onclick="saveDocPDF()">💾 Guardar PDF en nube</button>
+      <button class="btn btn-dark btn-sm" onclick="printModal()">🖨 Imprimir</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL INVOICE ===== -->
+<div class="modal-overlay" id="modal-invoice">
+  <div class="modal-box" style="max-width:860px">
+    <div class="modal-header">
+      <div class="modal-title">Factura — Gold Repair</div>
+      <button class="modal-close" onclick="closeModal('modal-invoice')">✕</button>
+    </div>
+    <div class="modal-body" id="modal-invoice-body" style="padding:0"></div>
+    <div class="modal-footer no-print">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('modal-invoice')">Cerrar</button>
+      <button class="btn btn-gold btn-sm" id="btn-save-invoice-pdf" onclick="saveInvoicePDF()">☁ Guardar PDF en nube</button>
+      <button class="btn btn-dark btn-sm" onclick="printInvoiceModal()">🖨 Descargar PDF</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========================================
+     FIREBASE SDKs (v10 compat) + html2pdf
+     ======================================== -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<script>
+// ================================================================
+//  ╔══════════════════════════════════════════════════════════╗
+//  ║  FIREBASE CONFIGURATION — REEMPLAZA ESTOS VALORES        ║
+//  ║  Ve a: https://console.firebase.google.com               ║
+//  ║  Proyecto → Configuración → Tu aplicación web            ║
+//  ╚══════════════════════════════════════════════════════════╝
+// ================================================================
+const firebaseConfig = {
+  apiKey:            "TU_API_KEY",
+  authDomain:        "TU_PROJECT_ID.firebaseapp.com",
+  projectId:         "TU_PROJECT_ID",
+  storageBucket:     "TU_PROJECT_ID.appspot.com",
+  messagingSenderId: "TU_MESSAGING_SENDER_ID",
+  appId:             "TU_APP_ID"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth    = firebase.auth();
+const db      = firebase.firestore();
+const storage = firebase.storage();
+
+// ================================================================
+//  AUTENTICACIÓN
+// ================================================================
+auth.onAuthStateChanged(user => {
+  if (user) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('sidebar-user').textContent   = user.email;
+    initApp();
+  } else {
+    document.getElementById('login-screen').style.display = 'flex';
+    setStatus('grey', 'Sin sesión');
+  }
+});
+
+async function loginUser() {
+  const email  = document.getElementById('login-email').value.trim();
+  const pass   = document.getElementById('login-pass').value;
+  const errEl  = document.getElementById('login-error');
+  const btn    = document.getElementById('login-btn');
+  const spin   = document.getElementById('login-spinner');
+  errEl.textContent = '';
+  if (!email || !pass) { errEl.textContent = 'Introduce correo y contraseña.'; return; }
+  btn.disabled  = true;
+  spin.style.display = 'block';
+  try {
+    await auth.signInWithEmailAndPassword(email, pass);
+  } catch(e) {
+    const msgs = {
+      'auth/user-not-found':  'Usuario no encontrado.',
+      'auth/wrong-password':  'Contraseña incorrecta.',
+      'auth/invalid-email':   'Correo no válido.',
+      'auth/too-many-requests':'Demasiados intentos. Espera un momento.',
+    };
+    errEl.textContent = msgs[e.code] || 'Error de autenticación. Inténtalo de nuevo.';
+  } finally {
+    btn.disabled = false;
+    spin.style.display = 'none';
+  }
+}
+
+function logoutUser() {
+  if (confirm('¿Cerrar sesión en Gold Repair?')) auth.signOut();
+}
+
+document.getElementById('login-pass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') loginUser();
+});
+
+// ================================================================
+//  DATOS
+// ================================================================
+const TARIFFS = [
+  {name:"Diagnóstico y presupuesto",                        price:0},
+  {name:"Recuperación de datos básica",                     price:80},
+  {name:"Antivirus (sin licencia)",                         price:25},
+  {name:"Copia / migración de datos",                       price:40},
+  {name:"Clonación disco / migración SSD",                  price:60},
+  {name:"Instalación de pieza interna (RAM, SSD, GPU…)",    price:30},
+  {name:"Instalación de periférico / dispositivo",          price:25},
+  {name:"Limpieza interna + pasta térmica",                 price:45},
+  {name:"Limpieza de virus / malware",                      price:55},
+  {name:"Formateo + reinstalar SO + drivers",               price:70},
+];
+
+let ENTRIES            = [];    // sincronizado con Firestore via onSnapshot
+let currentFilter      = 'todos';
+let invoiceLines       = [];
+let lastAddedEntry     = null;
+let currentInvoiceEntry = null; // entrada activa para factura
+let currentModalDocType = null;
+let currentModalEntryId = null;
+
+// ================================================================
+//  ESTADO Y UTILIDADES UI
+// ================================================================
+function setStatus(color, text) {
+  const dot  = document.getElementById('status-dot');
+  const span = document.getElementById('status-text');
+  dot.className  = 'status-dot ' + color;
+  span.textContent = text;
+}
+
+function today() {
+  return new Date().toISOString().split('T')[0];
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  const [y,m,dd] = d.split('-');
+  return `${dd}/${m}/${y}`;
+}
+
+function statusBadge(s) {
+  const map = {
+    'En proceso':'proceso','En reparación':'reparacion',
+    'Terminado':'terminado','Cancelado':'cancelado','Entregado':'entregado'
+  };
+  return `<span class="status-badge ${map[s]||'proceso'}">${s}</span>`;
+}
+
+function generateClientCode(nombre, apellidos) {
+  if (!nombre || !apellidos) return '';
+  const n1 = nombre.trim()[0]||'';
+  const n2 = nombre.trim()[1]||'';
+  const parts = apellidos.trim().split(' ');
+  const a1 = parts[0]?.[0]||'';
+  const a2 = parts[0]?.[1]||'';
+  const a3 = parts[1]?.[0]||'';
+  const year = new Date().getFullYear();
+  const num  = String(ENTRIES.length + 1).padStart(3,'0');
+  return `${year}-SM-${(n1+n2).replace(/[^a-zA-Z]/g,'').toUpperCase()}${(a1+a2+a3).replace(/[^a-zA-Z]/g,'').toUpperCase()}-${num}`;
+}
+
+function generateTicketId() {
+  const num = String(ENTRIES.length + 1).padStart(3,'0');
+  return `${new Date().getFullYear()}-EQP-${num}`;
+}
+
+// ================================================================
+//  INICIALIZACIÓN — Arranca el listener de Firestore
+// ================================================================
+function initApp() {
+  setStatus('saving', 'Conectando...');
+  document.getElementById('today-date').textContent =
+    new Date().toLocaleDateString('es-ES',{weekday:'short',day:'numeric',month:'long',year:'numeric'});
+
+  // onSnapshot = escucha en tiempo real cualquier cambio en la colección
+  db.collection('equipos')
+    .orderBy('fechaEntrada', 'desc')
+    .onSnapshot(snapshot => {
+      ENTRIES = snapshot.docs.map(doc => ({ _docId: doc.id, ...doc.data() }));
+      setStatus('online', 'En línea ✓');
+      updateBadge();
+      renderDashboard();
+      renderGestion();
+      renderInvoiceTab();
+    }, err => {
+      console.error('Firestore error:', err);
+      setStatus('', 'Error de conexión');
+    });
+
+  renderTariffsTable();
+}
+
+// ================================================================
+//  PDF + FIREBASE STORAGE
+// ================================================================
+
+/**
+ * Genera un PDF a partir de HTML y lo sube a Firebase Storage.
+ * Guarda la URL pública en el campo `fieldName` del documento Firestore del equipo.
+ */
+async function generateAndUploadPDF(htmlContent, fileName, entryId, fieldName) {
+  // 1. Crear elemento temporal oculto
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText = [
+    'position:fixed','left:-9999px','top:0','width:780px',
+    'background:white','padding:24px','font-family:DM Sans,sans-serif',
+    'font-size:13px','color:#333','line-height:1.5'
+  ].join(';');
+  // Inyectar fuentes inline para que html2pdf las capture
+  wrapper.innerHTML = `
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Sans:wght@400;600;700&display=swap');
+      :root{--gold:#D4AF37;--gold-muted:#AA8F00;--dark:#1A1A1A;--grey:#A6ACAF;--gold-pale:#FDE89C}
+      .pdoc .field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:10px 0}
+      .pdoc .field-box{border-bottom:1.5px solid #DDD;padding:6px 0}
+      .pdoc .field-label{font-size:9px;color:#999;text-transform:uppercase;letter-spacing:1px}
+      .pdoc .field-value{font-size:13px;font-weight:600;margin-top:2px}
+      .pdoc .sig-row{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:30px;text-align:center}
+      .pdoc .sig-line{border-bottom:1.5px solid #333;height:50px;margin-bottom:6px}
+      .pdoc .sig-label{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#555;font-weight:700}
+      .pdoc .notice-box{border:2px dashed #AA8F00;padding:12px;border-radius:4px;margin:12px 0;background:#FFFDF5}
+      .pdoc .notice-title{color:#d35400;font-weight:700;font-size:11px;margin-bottom:4px}
+      .pdoc .terms,.pdoc .terms-box{background:#FDE89C;padding:12px;border-radius:4px;font-size:10px;color:#333;line-height:1.4;margin-top:12px}
+      .pdoc .header-row{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #AA8F00;padding-bottom:12px;margin-bottom:16px}
+      .pdoc .watermark{display:none}
+      .pdoc .company-name{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700}
+      .pdoc .gold{color:#AA8F00;font-weight:700}
+      .pdoc table{width:100%;border-collapse:collapse;margin:12px 0}
+      .pdoc table th{background:#0D0D0D;color:#D4AF37;padding:8px 12px;font-size:10px;text-transform:uppercase;letter-spacing:1px;text-align:left}
+      .pdoc table td{padding:10px 12px;border-bottom:1px solid #EEE}
+      .pdoc .total-row td{background:#0D0D0D;color:#D4AF37;font-weight:700;font-size:16px;padding:12px}
+      .no-print{display:none!important}
+    </style>
+    ${htmlContent}`;
+  document.body.appendChild(wrapper);
+
+  try {
+    // 2. Generar blob PDF con html2pdf
+    const blob = await html2pdf().set({
+      margin:       [8, 8, 8, 8],
+      filename:     fileName,
+      html2canvas:  { scale: 2, useCORS: true, logging: false, letterRendering: true },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    }).from(wrapper).output('blob');
+
+    // 3. Subir a Firebase Storage
+    const storageRef = storage.ref(`documentos/${entryId}/${fileName}`);
+    const snapshot   = await storageRef.put(blob, { contentType: 'application/pdf' });
+    const url        = await snapshot.ref.getDownloadURL();
+
+    // 4. Actualizar URL en Firestore
+    if (entryId) {
+      const entry = ENTRIES.find(e => e.id === entryId);
+      if (entry && entry._docId) {
+        await db.collection('equipos').doc(entry._docId).update({ [fieldName]: url });
+      }
+    }
+
+    return url;
+  } finally {
+    document.body.removeChild(wrapper);
+  }
+}
+
+// Guarda el PDF del documento actualmente visible en modal-docs
+async function saveDocPDF() {
+  if (!currentModalDocType || !currentModalEntryId) {
+    alert('No hay documento activo para guardar.');
+    return;
+  }
+  const btn = document.getElementById('btn-save-pdf');
+  btn.disabled = true;
+  btn.textContent = '⏳ Generando PDF...';
+
+  try {
+    const htmlContent = document.getElementById('modal-body').innerHTML;
+    const fieldMap    = { ticket:'pdfTicket', justificante:'pdfJustificante', rgpd:'pdfRgpd' };
+    const fieldName   = fieldMap[currentModalDocType];
+    const ts          = Date.now();
+    const fileName    = `${currentModalDocType}_${currentModalEntryId}_${ts}.pdf`;
+
+    const url = await generateAndUploadPDF(htmlContent, fileName, currentModalEntryId, fieldName);
+
+    btn.textContent      = '✓ PDF guardado en nube';
+    btn.style.background = 'var(--green)';
+    btn.style.color      = 'white';
+    setTimeout(() => {
+      btn.textContent      = '💾 Guardar PDF en nube';
+      btn.style.background = '';
+      btn.style.color      = '';
+      btn.disabled         = false;
+    }, 3000);
+    // Abrir en nueva pestaña
+    window.open(url, '_blank');
+  } catch(err) {
+    console.error('Error al subir PDF:', err);
+    btn.textContent = '✗ Error — ver consola';
+    btn.disabled    = false;
+  }
+}
+
+// Guarda el PDF de la factura del modal-invoice
+async function saveInvoicePDF() {
+  const btn = document.getElementById('btn-save-invoice-pdf');
+  btn.disabled = true;
+  btn.textContent = '⏳ Generando PDF...';
+
+  try {
+    const htmlContent = document.getElementById('modal-invoice-body').innerHTML;
+    const entryId     = currentInvoiceEntry ? currentInvoiceEntry.id : 'factura-manual';
+    const ts          = Date.now();
+    const fileName    = `factura_${entryId}_${ts}.pdf`;
+
+    const url = await generateAndUploadPDF(htmlContent, fileName, currentInvoiceEntry?.id, 'pdfFactura');
+
+    btn.textContent      = '✓ Factura en nube';
+    btn.style.background = 'var(--green)';
+    btn.style.color      = 'white';
+    setTimeout(() => {
+      btn.textContent      = '☁ Guardar PDF en nube';
+      btn.style.background = '';
+      btn.style.color      = '';
+      btn.disabled         = false;
+    }, 3000);
+    window.open(url, '_blank');
+  } catch(err) {
+    console.error('Error al subir factura:', err);
+    btn.textContent = '✗ Error — ver consola';
+    btn.disabled    = false;
+  }
+}
+
+// ================================================================
+//  OPERACIONES CRUD — Firestore
+// ================================================================
+
+async function submitIngreso() {
+  const nombre    = document.getElementById('f-nombre').value.trim();
+  const apellidos = document.getElementById('f-apellidos').value.trim();
+  if (!nombre || !apellidos) {
+    alert('Por favor introduce al menos el nombre y apellidos del cliente.');
+    return;
+  }
+  const tipo = document.getElementById('f-tipo').value;
+  if (!tipo) {
+    alert('Por favor selecciona el tipo de dispositivo.');
+    return;
+  }
+
+  const btn = document.getElementById('btn-submit');
+  btn.disabled    = true;
+  btn.textContent = '⏳ Guardando...';
+  setStatus('saving', 'Guardando...');
+
+  const entry = {
+    id:           generateTicketId(),
+    clientCode:   generateClientCode(nombre, apellidos),
+    nombre:       nombre + ' ' + apellidos,
+    dni:          document.getElementById('f-dni').value,
+    tel:          document.getElementById('f-tel').value,
+    email:        document.getElementById('f-email').value,
+    dir:          document.getElementById('f-dir').value,
+    tipo,
+    marca:        document.getElementById('f-marca').value,
+    modelo:       document.getElementById('f-modelo').value,
+    serie:        document.getElementById('f-serie').value,
+    tecnico:      document.getElementById('f-tecnico').value,
+    estado:       document.getElementById('f-estado').value,
+    notasCliente: document.getElementById('f-notas-cliente').value,
+    estetico:     document.getElementById('f-estetico').value,
+    fechaEntrada: today(),
+    fechaSalida:  '',
+    pdfTicket:       '',
+    pdfJustificante: '',
+    pdfRgpd:         '',
+    pdfFactura:      '',
+  };
+
+  try {
+    const docRef       = await db.collection('equipos').add(entry);
+    lastAddedEntry     = { _docId: docRef.id, ...entry };
+    currentInvoiceEntry = lastAddedEntry;
+
+    document.getElementById('ingreso-form').style.display = 'none';
+    document.getElementById('success-panel').classList.add('show');
+    document.getElementById('success-info').textContent =
+      `${entry.clientCode} · Ticket ${entry.id} · ${entry.nombre}`;
+  } catch(err) {
+    console.error('Error al guardar:', err);
+    alert('Error al guardar en la nube: ' + err.message);
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = '✓ Registrar Ingreso';
+  }
+}
+
+async function changeStatus(id, status) {
+  const e = ENTRIES.find(e => e.id === id);
+  if (!e || !e._docId) return;
+  const update = { estado: status };
+  if (status === 'Entregado' || status === 'Terminado') update.fechaSalida = today();
+  try {
+    await db.collection('equipos').doc(e._docId).update(update);
+  } catch(err) {
+    console.error('Error al cambiar estado:', err);
+  }
+}
+
+async function deleteEntry(id) {
+  if (!confirm('¿Eliminar este equipo del registro? Esta acción no se puede deshacer.')) return;
+  const e = ENTRIES.find(e => e.id === id);
+  if (!e || !e._docId) return;
+  try {
+    await db.collection('equipos').doc(e._docId).delete();
+  } catch(err) {
+    console.error('Error al eliminar:', err);
+    alert('Error al eliminar: ' + err.message);
+  }
+}
+
+// ================================================================
+//  NAVEGACIÓN
+// ================================================================
+function showTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  const titles = {
+    dashboard:'Panel de Control', ingreso:'Nuevo Ingreso',
+    gestion:'Todos los Equipos',  factura:'Crear Factura', tarifas:'Tarifas'
+  };
+  document.getElementById('topbar-title').textContent = titles[name]||name;
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick')?.includes(`'${name}'`)) n.classList.add('active');
+  });
+  if (name === 'gestion')   renderGestion();
+  if (name === 'factura')   renderInvoiceTab();
+  if (name === 'tarifas')   renderTariffsTable();
+  if (name === 'dashboard') renderDashboard();
+}
+
+// ================================================================
+//  FORMULARIO DE INGRESO
+// ================================================================
+function updateCode() {
+  const nombre    = document.getElementById('f-nombre').value;
+  const apellidos = document.getElementById('f-apellidos').value;
+  document.getElementById('f-codigo').value = generateClientCode(nombre, apellidos);
+  document.getElementById('f-ticket').value = generateTicketId();
+}
+
+function resetForm() {
+  document.getElementById('ingreso-form').style.display = '';
+  document.getElementById('success-panel').classList.remove('show');
+  ['f-nombre','f-apellidos','f-dni','f-tel','f-email','f-dir',
+   'f-codigo','f-ticket','f-marca','f-modelo','f-serie','f-notas-cliente','f-estetico'
+  ].forEach(id => { document.getElementById(id).value = ''; });
+  document.getElementById('f-tipo').value   = '';
+  document.getElementById('f-tecnico').value = '';
+  document.getElementById('f-estado').value  = 'En proceso';
+  updateCode();
+}
+
+function goToInvoice() {
+  showTab('factura');
+  if (lastAddedEntry) prefillInvoiceFromEntry(lastAddedEntry);
+}
+
+// ================================================================
+//  ESTADÍSTICAS Y DASHBOARD
+// ================================================================
+function updateBadge() {
+  const active = ENTRIES.filter(e => e.estado==='En proceso'||e.estado==='En reparación').length;
+  document.getElementById('active-badge').textContent = active + ' activos';
+}
+
+function pdfLinksCell(e) {
+  const links = [];
+  if (e.pdfTicket)
+    links.push(`<a href="${e.pdfTicket}" target="_blank" class="action-btn cloud" title="Ver Ticket PDF">🎫</a>`);
+  if (e.pdfJustificante)
+    links.push(`<a href="${e.pdfJustificante}" target="_blank" class="action-btn cloud" title="Ver Justificante PDF">📋</a>`);
+  if (e.pdfRgpd)
+    links.push(`<a href="${e.pdfRgpd}" target="_blank" class="action-btn cloud" title="Ver RGPD PDF">🔒</a>`);
+  if (e.pdfFactura)
+    links.push(`<a href="${e.pdfFactura}" target="_blank" class="action-btn invoice" title="Ver Factura PDF">📄 Factura</a>`);
+  return links.length
+    ? `<div style="display:flex;gap:4px;flex-wrap:wrap">${links.join('')}</div>`
+    : `<span style="color:var(--grey);font-size:11px">—</span>`;
+}
+
+function renderDashboard() {
+  const total     = ENTRIES.length;
+  const proceso   = ENTRIES.filter(e => e.estado==='En proceso').length;
+  const reparacion= ENTRIES.filter(e => e.estado==='En reparación').length;
+  const terminado = ENTRIES.filter(e => e.estado==='Terminado').length;
+  const entregado = ENTRIES.filter(e => e.estado==='Entregado').length;
+
+  document.getElementById('stats-grid').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-number">${total}</div><div class="stat-label">Total Equipos</div></div>
+    <div class="stat-card orange">
+      <div class="stat-number">${proceso}</div><div class="stat-label">En Proceso</div></div>
+    <div class="stat-card blue">
+      <div class="stat-number">${reparacion}</div><div class="stat-label">En Reparación</div></div>
+    <div class="stat-card green">
+      <div class="stat-number">${terminado}</div><div class="stat-label">Terminados</div></div>
+    <div class="stat-card">
+      <div class="stat-number">${entregado}</div><div class="stat-label">Entregados</div></div>
+  `;
+
+  const recent = [...ENTRIES].slice(0, 10);
+  const tbody  = document.getElementById('dashboard-table-body');
+  if (recent.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--grey)">No hay equipos registrados aún</td></tr>';
+    return;
+  }
+  tbody.innerHTML = recent.map(e => `
+    <tr>
+      <td><div class="client-name">${e.nombre}</div><div class="client-code">${e.clientCode}</div></td>
+      <td><b>${e.tipo}</b>${e.marca?' — '+e.marca:''}</td>
+      <td><span style="font-size:12px;font-family:monospace;color:var(--grey)">${e.tecnico||'—'}</span></td>
+      <td>${fmtDate(e.fechaEntrada)}</td>
+      <td>${statusBadge(e.estado)}</td>
+      <td>${pdfLinksCell(e)}</td>
+      <td>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="action-btn docs" onclick="openDocChooserFor('${e.id}')">📄 Docs</button>
+          <select style="font-size:11px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;cursor:pointer"
+                  onchange="changeStatus('${e.id}',this.value)">
+            ${['En proceso','En reparación','Terminado','Entregado','Cancelado']
+               .map(s=>`<option${s===e.estado?' selected':''}>${s}</option>`).join('')}
+          </select>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+// ================================================================
+//  GESTIÓN
+// ================================================================
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGestion();
+}
+
+function renderGestion() {
+  const q    = (document.getElementById('search-input')||{value:''}).value.toLowerCase();
+  const data = ENTRIES.filter(e => {
+    const matchFilter = currentFilter==='todos' || e.estado===currentFilter;
+    const matchSearch = !q || (
+      e.nombre.toLowerCase().includes(q) ||
+      e.clientCode.toLowerCase().includes(q) ||
+      (e.tipo||'').toLowerCase().includes(q) ||
+      (e.marca||'').toLowerCase().includes(q)
+    );
+    return matchFilter && matchSearch;
+  });
+
+  const tbody = document.getElementById('gestion-table-body');
+  if (!tbody) return;
+  if (data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--grey)">No hay resultados</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map(e => `
+    <tr>
+      <td><div class="client-name">${e.nombre}</div><div class="client-code">${e.clientCode} · ${e.id}</div></td>
+      <td><b>${e.tipo}</b>${e.marca?' — '+e.marca:''}${e.modelo?' '+e.modelo:''}</td>
+      <td><span style="font-size:12px;font-family:monospace;color:var(--grey)">${e.tecnico||'—'}</span></td>
+      <td>${fmtDate(e.fechaEntrada)}</td>
+      <td>${statusBadge(e.estado)}</td>
+      <td>${pdfLinksCell(e)}</td>
+      <td>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="action-btn docs" onclick="openDocChooserFor('${e.id}')">📄 Docs</button>
+          <select style="font-size:11px;padding:4px 6px;border:1px solid #ddd;border-radius:4px;cursor:pointer"
+                  onchange="changeStatus('${e.id}',this.value)">
+            ${['En proceso','En reparación','Terminado','Entregado','Cancelado']
+               .map(s=>`<option${s===e.estado?' selected':''}>${s}</option>`).join('')}
+          </select>
+          <button class="action-btn del" onclick="deleteEntry('${e.id}')">✕</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+// ================================================================
+//  GENERACIÓN DE DOCUMENTOS
+// ================================================================
+function openDocChooser() {
+  if (!lastAddedEntry) return;
+  openDocChooserFor(lastAddedEntry.id);
+}
+
+function openDocChooserFor(entryId) {
+  const e = ENTRIES.find(en => en.id === entryId);
+  if (!e) return;
+  currentModalDocType = null;
+  currentModalEntryId = entryId;
+  document.getElementById('modal-title').textContent = `Documentos — ${e.nombre}`;
+  document.getElementById('btn-save-pdf').style.display = 'none';
+  document.getElementById('modal-body').innerHTML = `
+    <div class="doc-chooser">
+      <div class="doc-choice-btn" onclick="showDoc('ticket','${entryId}')">
+        <div class="dc-icon">🎫</div>
+        <div class="dc-name">Ticket de Recogida</div>
+        <div class="dc-desc">Datos del cliente y equipo para archivar</div>
+      </div>
+      <div class="doc-choice-btn" onclick="showDoc('justificante','${entryId}')">
+        <div class="dc-icon">📋</div>
+        <div class="dc-name">Justificante de Custodia</div>
+        <div class="dc-desc">Resguardo oficial para entregar al cliente</div>
+      </div>
+      <div class="doc-choice-btn" onclick="showDoc('rgpd','${entryId}')">
+        <div class="dc-icon">🔒</div>
+        <div class="dc-name">Doc. Responsabilidad / RGPD</div>
+        <div class="dc-desc">Cláusulas de exención y protección de datos</div>
+      </div>
+      <div class="doc-choice-btn" onclick="goToInvoiceFor('${entryId}')">
+        <div class="dc-icon">◎</div>
+        <div class="dc-name">Crear Factura</div>
+        <div class="dc-desc">Ir al generador con datos pre-rellenados</div>
+      </div>
+    </div>`;
+  openModal('modal-docs');
+}
+
+function goToInvoiceFor(entryId) {
+  const e = ENTRIES.find(en => en.id === entryId);
+  closeModal('modal-docs');
+  showTab('factura');
+  if (e) { prefillInvoiceFromEntry(e); currentInvoiceEntry = e; }
+}
+
+function showDoc(type, entryId) {
+  const e = ENTRIES.find(en => en.id === entryId);
+  if (!e) return;
+  currentModalDocType = type;
+  currentModalEntryId = entryId;
+  let html = '';
+  if (type === 'ticket')       html = buildTicketDoc(e);
+  if (type === 'justificante') html = buildJustificanteDoc(e);
+  if (type === 'rgpd')         html = buildRGPDDoc(e);
+  const titles = { ticket:'Ticket de Recogida', justificante:'Justificante de Custodia', rgpd:'Documento de Responsabilidad' };
+  document.getElementById('modal-title').textContent = titles[type]||type;
+  document.getElementById('modal-body').innerHTML    = html;
+  // Mostrar botón de guardar PDF
+  const btn = document.getElementById('btn-save-pdf');
+  btn.style.display  = 'inline-flex';
+  btn.textContent    = '💾 Guardar PDF en nube';
+  btn.disabled       = false;
+  btn.style.background = '';
+  btn.style.color      = '';
+}
+
+function buildTicketDoc(e) {
+  return `<div class="printable-doc pdoc">
+    <div class="header-row">
+      <div>
+        <div class="company-name"><span class="gold">GOLD</span> REPAIR</div>
+        <div style="font-size:11px;color:#888;margin-top:3px">GOLD REPAIR S.L. · goldrepaircontact@gmail.com</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:12px;font-weight:700">TICKET: <span class="gold">${e.id}</span></div>
+        <div style="font-size:11px;color:#888;margin-top:4px">FECHA: ${fmtDate(e.fechaEntrada)}</div>
+      </div>
+    </div>
+    <div style="background:#1A1A1A;color:#D4AF37;text-align:center;padding:8px;margin:0 0 16px;font-size:11px;letter-spacing:2px;font-weight:700;text-transform:uppercase">TICKET DE RECOGIDA DE EQUIPO</div>
+    <div style="font-weight:700;font-size:11px;color:#A6ACAF;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Datos del Cliente</div>
+    <div class="field-row">
+      <div class="field-box"><div class="field-label">Nombre</div><div class="field-value">${e.nombre}</div></div>
+      <div class="field-box"><div class="field-label">Código Cliente</div><div class="field-value" style="font-family:monospace">${e.clientCode}</div></div>
+      <div class="field-box"><div class="field-label">DNI / NIE</div><div class="field-value">${e.dni||'—'}</div></div>
+      <div class="field-box"><div class="field-label">Teléfono</div><div class="field-value">${e.tel||'—'}</div></div>
+      <div class="field-box" style="grid-column:1/-1"><div class="field-label">Email</div><div class="field-value">${e.email||'—'}</div></div>
+    </div>
+    <div style="font-weight:700;font-size:11px;color:#A6ACAF;text-transform:uppercase;letter-spacing:1px;margin:16px 0 10px">Datos del Equipo</div>
+    <div class="field-row">
+      <div class="field-box"><div class="field-label">Tipo</div><div class="field-value">${e.tipo}</div></div>
+      <div class="field-box"><div class="field-label">Marca / Modelo</div><div class="field-value">${e.marca||'—'} ${e.modelo||''}</div></div>
+      <div class="field-box" style="grid-column:1/-1"><div class="field-label">Notas del cliente</div><div class="field-value" style="font-weight:400;font-size:12px">${e.notasCliente||'—'}</div></div>
+      <div class="field-box" style="grid-column:1/-1"><div class="field-label">Estado estético</div><div class="field-value" style="font-weight:400;font-size:12px">${e.estetico||'Sin daños visibles reseñables'}</div></div>
+    </div>
+    <div class="terms">
+      <b>AVISO DE SERVICIO:</b> El cliente confirma la propiedad del equipo entregado. No nos hacemos responsables de la pérdida de datos no respaldados. Los equipos no recogidos en un plazo de 90 días naturales tras la notificación se considerarán legalmente abandonados.
+    </div>
+    <div class="sig-row">
+      <div><div class="sig-line"></div><div class="sig-label">Firma Cliente</div></div>
+      <div><div class="sig-line"></div><div class="sig-label">Sello / Técnico Autorizado</div></div>
+    </div>
+  </div>`;
+}
+
+function buildJustificanteDoc(e) {
+  return `<div class="printable-doc pdoc" style="position:relative">
+    <div class="watermark">JUSTIFICANTE</div>
+    <div class="header-row">
+      <div>
+        <div class="company-name"><span class="gold">GOLD</span> REPAIR</div>
+        <div style="font-size:11px;color:#888;margin-top:3px">Servicio Técnico Certificado</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:12px;font-weight:700">TICKET: <span class="gold">${e.id}</span></div>
+        <div style="font-size:11px;color:#888;margin-top:4px">FECHA: ${fmtDate(e.fechaEntrada)}</div>
+      </div>
+    </div>
+    <div style="background:#1A1A1A;color:#D4AF37;text-align:center;padding:8px;margin:0 0 16px;font-size:11px;letter-spacing:2px;font-weight:700;text-transform:uppercase">Resguardo de Custodia de Equipo</div>
+    <div class="field-row">
+      <div class="field-box"><div class="field-label">Nombre del Cliente</div><div class="field-value">${e.nombre}</div></div>
+      <div class="field-box"><div class="field-label">DNI / NIE / CIF</div><div class="field-value">${e.dni||'—'}</div></div>
+      <div class="field-box" style="grid-column:1/-1"><div class="field-label">Equipo en Depósito</div><div class="field-value">${e.tipo} ${e.marca||''} ${e.modelo||''}</div></div>
+    </div>
+    <div class="notice-box">
+      <div class="notice-title">⚠️ ATENCIÓN: DOCUMENTO DE RETIRADA</div>
+      Este resguardo es el <b>único documento válido</b> para retirar su equipo. No se realizará la entrega si no se presenta este justificante físico o digital.
+    </div>
+    <div style="font-weight:700;font-size:11px;color:#A6ACAF;text-transform:uppercase;letter-spacing:1px;margin:16px 0 8px">Estado de Recepción / Notas</div>
+    <div style="border:1px solid #ddd;padding:12px;border-radius:4px;font-size:12px;min-height:50px">${e.estetico||e.notasCliente||'Sin notas adicionales.'}</div>
+    <div class="terms">
+      El cliente confirma la propiedad del equipo. G[old] Repair custodia el bien para su diagnóstico o reparación. La empresa no responde por pérdida de datos. Los equipos no retirados tras 90 días naturales desde el aviso de recogida se considerarán abandonados según el Art. 1922 del Código Civil.
+    </div>
+    <div class="sig-row">
+      <div><div class="sig-line"></div><div class="sig-label">Firma del Cliente</div></div>
+      <div><div class="sig-line"></div><div class="sig-label">Sello / Recepción G[old]</div></div>
+    </div>
+  </div>`;
+}
+
+function buildRGPDDoc(e) {
+  return `<div class="printable-doc pdoc">
+    <div class="header-row">
+      <div>
+        <div class="company-name"><span class="gold">GOLD</span> REPAIR</div>
+        <div style="font-size:11px;color:#888;margin-top:3px">GOLD REPAIR S.L. · NIF: B-56745914</div>
+      </div>
+      <div style="text-align:right;color:#b8860b;font-weight:700;font-size:14px;font-family:'Cormorant Garamond',serif">DOCUMENTO DE<br>RESPONSABILIDAD</div>
+    </div>
+    <p style="font-size:12px;color:#555;margin-bottom:14px">Este documento informa al cliente sobre las condiciones del servicio y delimita las responsabilidades de <b>Gold Repair</b>.</p>
+    <div style="border-left:4px solid #AA8F00;padding-left:10px;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Declaración de No Responsabilidad</div>
+    <ul style="font-size:12px;padding-left:18px;color:#444;margin-bottom:14px;line-height:1.7">
+      <li><b>Daños preexistentes:</b> Desperfectos previos a la intervención.</li>
+      <li><b>Causas de fuerza mayor:</b> Desastres naturales o fallos externos.</li>
+      <li><b>Uso indebido:</b> Manejo inadecuado por parte del cliente o terceros.</li>
+      <li><b>Objetos de valor:</b> No nos responsabilizamos por artículos no declarados.</li>
+      <li><b>Pérdida de datos:</b> Se recomienda hacer copia de seguridad previa.</li>
+    </ul>
+    <div style="border-left:4px solid #AA8F00;padding-left:10px;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Compromiso y Aceptación</div>
+    <p style="font-size:12px;color:#444;margin-bottom:16px">El cliente declara haber sido informado de los riesgos y acepta que la firma implica la aceptación total de estas cláusulas.</p>
+    <div class="field-row">
+      <div class="field-box"><div class="field-label">Nombre y Apellidos</div><div class="field-value">${e.nombre}</div></div>
+      <div class="field-box"><div class="field-label">DNI / Identificación</div><div class="field-value">${e.dni||'—'}</div></div>
+    </div>
+    <div style="margin-top:20px">
+      <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#aaa;margin-bottom:8px">Firma del Cliente</div>
+      <div style="border:1px solid #ccc;height:80px;background:#fafafa;border-radius:4px"></div>
+    </div>
+    <p style="font-size:10px;color:#aaa;text-align:center;margin-top:30px;border-top:1px dotted #ccc;padding-top:12px">
+      Documento de aceptación — Generado el ${new Date().toLocaleString('es-ES')} — Gold Repair S.L.
+    </p>
+  </div>`;
+}
+
+// ================================================================
+//  FACTURA
+// ================================================================
+function renderInvoiceTab() {
+  // Selector de tarifas
+  document.getElementById('tariff-selector').innerHTML = TARIFFS.map((t,i) => `
+    <div class="tariff-item" id="tariff-${i}" onclick="toggleTariff(${i})">
+      <span class="tariff-name">${t.name}</span>
+      <span class="tariff-price">${t.price===0?'Gratis':t.price+'€'}</span>
+    </div>`).join('');
+
+  // Dropdown clientes
+  const sel = document.getElementById('inv-client-select');
+  sel.innerHTML = '<option value="">— Seleccionar o rellenar manualmente —</option>';
+  const seen = new Set();
+  ENTRIES.forEach(e => {
+    if (!seen.has(e.nombre)) {
+      seen.add(e.nombre);
+      const opt = document.createElement('option');
+      opt.value = e.id;
+      opt.textContent = `${e.nombre} (${e.clientCode})`;
+      sel.appendChild(opt);
+    }
+  });
+  document.getElementById('inv-ref').value = `2026-GR-${String(ENTRIES.length).padStart(3,'0')}`;
+  updateInvoicePreview();
+}
+
+function prefillInvoiceFromEntry(e) {
+  document.getElementById('inv-nombre').value = e.nombre;
+  document.getElementById('inv-dni').value    = e.dni||'';
+  document.getElementById('inv-ref').value    = `2026-GR-${e.id.split('-').pop()}`;
+  currentInvoiceEntry = e;
+}
+
+function prefillInvoiceClient() {
+  const id = document.getElementById('inv-client-select').value;
+  if (!id) { currentInvoiceEntry = null; return; }
+  const e = ENTRIES.find(en => en.id === id);
+  if (e) prefillInvoiceFromEntry(e);
+}
+
+function toggleTariff(i) {
+  const t  = TARIFFS[i];
+  const el = document.getElementById(`tariff-${i}`);
+  const ex = invoiceLines.findIndex(l => l.name === t.name);
+  if (ex >= 0) {
+    invoiceLines.splice(ex,1);
+    el.classList.remove('selected');
+  } else {
+    invoiceLines.push({name:t.name, price:t.price});
+    el.classList.add('selected');
+  }
+  updateInvoicePreview();
+}
+
+function addCustomService() {
+  const name  = document.getElementById('custom-svc-name').value.trim();
+  const price = parseFloat(document.getElementById('custom-svc-price').value)||0;
+  if (!name) return;
+  invoiceLines.push({name, price});
+  document.getElementById('custom-svc-name').value  = '';
+  document.getElementById('custom-svc-price').value = '';
+  updateInvoicePreview();
+}
+
+function removeInvoiceLine(i) {
+  const name = invoiceLines[i].name;
+  invoiceLines.splice(i,1);
+  TARIFFS.forEach((t,ti) => {
+    if (t.name === name) document.getElementById(`tariff-${ti}`)?.classList.remove('selected');
+  });
+  updateInvoicePreview();
+}
+
+function updateInvoicePreview() {
+  const card = document.getElementById('invoice-preview-card');
+  if (invoiceLines.length === 0) { card.style.display='none'; return; }
+  card.style.display = 'block';
+  const subtotal = invoiceLines.reduce((s,l) => s+l.price, 0);
+  document.getElementById('invoice-lines').innerHTML = invoiceLines.map((l,i) => `
+    <div class="invoice-line">
+      <span class="invoice-line-name">${l.name}</span>
+      <span class="invoice-line-price">${l.price===0?'0.00€':l.price.toFixed(2)+'€'}</span>
+      <button class="invoice-line-remove" onclick="removeInvoiceLine(${i})">✕</button>
+    </div>`).join('');
+  document.getElementById('inv-subtotal').textContent = subtotal.toFixed(2)+'€';
+  document.getElementById('inv-total').textContent    = subtotal.toFixed(2)+'€';
+}
+
+function clearInvoice() {
+  invoiceLines = [];
+  document.querySelectorAll('.tariff-item').forEach(el => el.classList.remove('selected'));
+  updateInvoicePreview();
+}
+
+function printInvoice() {
+  const nombre   = document.getElementById('inv-nombre').value || 'Cliente';
+  const dni      = document.getElementById('inv-dni').value    || '—';
+  const ref      = document.getElementById('inv-ref').value    || '2026-GR-001';
+  const nota     = document.getElementById('inv-nota').value   || 'Intervención realizada con éxito. Equipo verificado bajo protocolos Gold.';
+  const subtotal = invoiceLines.reduce((s,l) => s+l.price, 0);
+
+  const html = `
+    <div class="pdoc" style="padding:40px;max-width:100%">
+      <div style="border-top:8px solid #D4AF37;padding-top:20px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px;padding-bottom:20px;border-bottom:1px solid #eee">
+          <div>
+            <div style="font-size:28px;font-weight:800;font-family:'Cormorant Garamond',serif">
+              <span style="color:#D4AF37">GOLD</span> REPAIR</div>
+            <div style="font-size:12px;color:#555;margin-top:4px"><b>GOLD REPAIR S.L.</b> · NIF: B-56745914</div>
+            <div style="font-size:12px;color:#555">goldrepaircontact@gmail.com</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-size:26px;font-weight:700;font-family:'Cormorant Garamond',serif">FACTURA</div>
+            <div style="font-size:12px;margin-top:6px"><b>REF:</b> ${ref}</div>
+            <div style="font-size:12px;color:#888">Fecha: ${new Date().toLocaleDateString('es-ES')}</div>
+          </div>
+        </div>
+        <div style="margin-bottom:20px">
+          <div style="font-size:11px;color:#999;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">FACTURADO A</div>
+          <div style="font-weight:700;font-size:15px">${nombre}</div>
+          <div style="font-size:13px;color:#555">DNI/CIF: ${dni}</div>
+        </div>
+        <table style="width:100%;border-collapse:collapse;margin-bottom:30px">
+          <thead><tr>
+            <th style="background:#0D0D0D;color:#D4AF37;padding:10px 14px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:1px">Descripción del Servicio</th>
+            <th style="background:#0D0D0D;color:#D4AF37;padding:10px 14px;text-align:right;font-size:11px;text-transform:uppercase">Valor</th>
+          </tr></thead>
+          <tbody>
+            ${invoiceLines.map(l => `
+              <tr>
+                <td style="padding:14px;border-bottom:1px solid #eee;font-size:14px">${l.name}</td>
+                <td style="padding:14px;border-bottom:1px solid #eee;text-align:right;font-weight:700">
+                  ${l.price===0?'0.00€':l.price.toFixed(2)+'€'}
+                </td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+        <div style="display:flex;justify-content:flex-end;margin-bottom:30px">
+          <table style="width:45%;border-collapse:collapse">
+            <tr>
+              <td style="padding:10px;border-bottom:1px solid #eee">Subtotal</td>
+              <td style="padding:10px;border-bottom:1px solid #eee;text-align:right">${subtotal.toFixed(2)}€</td>
+            </tr>
+            <tr style="background:#0D0D0D;color:#D4AF37">
+              <td style="padding:14px;font-size:18px;font-weight:800">TOTAL A PAGAR</td>
+              <td style="padding:14px;text-align:right;font-size:18px;font-weight:800">${subtotal.toFixed(2)}€</td>
+            </tr>
+          </table>
+        </div>
+        <div style="padding:14px;border:1px solid #eee;border-radius:6px;font-size:13px;margin-bottom:20px">
+          <b style="color:#D4AF37">Nota del técnico:</b> ${nota}
+        </div>
+        <div style="text-align:center;color:#999;font-size:11px;border-top:1px solid #eee;padding-top:16px">
+          <b>GOLD REPAIR S.L.</b> | https://gold-repair.42web.io/
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById('modal-invoice-body').innerHTML = html;
+  // reset botón guardar
+  const btn = document.getElementById('btn-save-invoice-pdf');
+  btn.textContent      = '☁ Guardar PDF en nube';
+  btn.disabled         = false;
+  btn.style.background = '';
+  btn.style.color      = '';
+  openModal('modal-invoice');
+}
+
+function printInvoiceModal() {
+  const w = window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700;800&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
+    <title>Factura - Gold Repair</title>
+    <style>body{margin:0;font-family:'DM Sans',sans-serif}@media print{body{margin:0}}</style>
+    </head><body>${document.getElementById('modal-invoice-body').innerHTML}
+    <script>window.print();window.close();<\/script></body></html>`);
+  w.document.close();
+}
+
+// ================================================================
+//  TARIFAS
+// ================================================================
+function renderTariffsTable() {
+  document.getElementById('tariff-full-table').innerHTML = TARIFFS.map(t => `
+    <tr>
+      <td style="padding:13px 16px">${t.name}</td>
+      <td style="padding:13px 16px;text-align:right;font-weight:700;font-size:15px;color:var(--gold-muted)">
+        ${t.price===0?'<span style="color:var(--green);font-size:13px">GRATIS</span>':t.price+'€'}
+      </td>
+    </tr>`).join('');
+}
+
+// ================================================================
+//  MODALES
+// ================================================================
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+function printModal() {
+  const content = document.getElementById('modal-body').innerHTML;
+  const w = window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
+    <title>Gold Repair</title>
+    <style>
+      body{font-family:'DM Sans',sans-serif;padding:20px}
+      .gold{color:#AA8F00;font-weight:700}
+      .company-name{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700}
+      .pdoc{font-size:12px;line-height:1.5;color:#333}
+      .header-row{display:flex;justify-content:space-between;border-bottom:2px solid #AA8F00;padding-bottom:12px;margin-bottom:16px}
+      .field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:10px 0}
+      .field-box{border-bottom:1.5px solid #DDD;padding:6px 0}
+      .field-label{font-size:9px;color:#999;text-transform:uppercase;letter-spacing:1px}
+      .field-value{font-size:13px;font-weight:600;margin-top:2px}
+      .sig-row{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:30px;text-align:center}
+      .sig-line{border-bottom:1.5px solid #333;height:50px;margin-bottom:6px}
+      .sig-label{font-size:9px;text-transform:uppercase;letter-spacing:1px;color:#555;font-weight:700}
+      .notice-box{border:2px dashed #AA8F00;padding:12px;border-radius:4px;margin:12px 0;background:#FFFDF5}
+      .notice-title{color:#d35400;font-weight:700;font-size:11px;margin-bottom:4px}
+      .terms,.terms-box{background:#FDE89C;padding:12px;border-radius:4px;font-size:10px;color:#333;line-height:1.4;margin-top:12px}
+      .watermark{display:none}
+      .no-print{display:none!important}
+      @media print{@page{margin:15mm}}
+    </style>
+    </head><body>${content}
+    <script>window.print();window.close();<\/script></body></html>`);
+  w.document.close();
+}
+
+// Close modals clicking outside
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => {
+    if (e.target === m) m.classList.remove('open');
+  });
+});
+</script>
+</body>
+</html>
